@@ -33,6 +33,8 @@ func main() {
 
 	// Initialize database
 	dbConn, err := sql.Open("mysql", dbConnectionString)
+	dbConn.SetMaxOpenConns(100)
+	dbConn.SetMaxIdleConns(10)
 	if err != nil {
 		log.Fatal(err)
 	}
