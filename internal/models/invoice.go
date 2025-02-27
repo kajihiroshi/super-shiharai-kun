@@ -16,3 +16,12 @@ type Invoice struct {
 	DueDate       time.Time
 	Status        string // e.g., "未処理", "処理中", "支払い済み", "エラー"
 }
+
+// CalculateTotalAmount calculates Fee, Tax, and TotalAmount for the invoice
+func (i *Invoice) CalculateTotalAmount() {
+	// Calculate the fee and tax based on the rates and payment amount
+	i.Fee = i.PaymentAmount * i.FeeRate
+	i.Tax = i.PaymentAmount * i.TaxRate
+	// Calculate the total amount
+	i.TotalAmount = i.PaymentAmount + i.Fee + i.Tax
+}

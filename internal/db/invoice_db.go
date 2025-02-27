@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+type InvoiceDBInterface interface {
+	Create(invoice *models.Invoice) error
+	FindByPeriod(start, end time.Time) ([]models.Invoice, error)
+}
+
 type InvoiceDB struct {
 	db *sql.DB
 }

@@ -7,10 +7,10 @@ import (
 )
 
 type InvoiceService struct {
-	db *db.InvoiceDB
+	db db.InvoiceDBInterface
 }
 
-func NewInvoiceService(db *db.InvoiceDB) *InvoiceService {
+func NewInvoiceService(db db.InvoiceDBInterface) *InvoiceService {
 	return &InvoiceService{db: db}
 }
 
