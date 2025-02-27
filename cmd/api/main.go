@@ -5,8 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
-
+	"strconv"
 	"super-shiharai-kun/internal/db"
 	"super-shiharai-kun/internal/models"
 	"super-shiharai-kun/internal/service"
@@ -45,42 +44,79 @@ func main() {
 	}
 
 	// Initialize layers
-	invoiceDB := db.NewInvoiceDB(dbConn)
-	invoiceService := service.NewInvoiceService(invoiceDB)
+	clientDB := db.NewClientDB(dbConn)
+	clientService := service.NewClientService(clientDB)
+
+	clientBankAccountDB := db.NewClientBankAccountDB(dbConn)
+	clientBankAccountService := service.NewClientBankAccountService(clientBankAccountDB)
 
 	// Setup router
 	r := gin.Default()
 
-	// API endpoints
-	r.POST("/api/invoices", func(c *gin.Context) {
-		var invoice models.Invoice
-		if err := c.ShouldBindJSON(&invoice); err != nil {
+	// API endpoints for Clients
+	r.POST("/api/clients", func(c *gin.Context) {
+		var client models.Client
+		if err := c.ShouldBindJSON(&client); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		if err := invoiceService.CreateInvoice(&invoice); err != nil {
+		if err := clientService.CreateClient(&client); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		c.JSON(http.StatusOK, invoice)
+		c.JSON(http.StatusOK, client)
 	})
 
-	r.GET("/api/invoices", func(c *gin.Context) {
-		start := c.Query("start")
-		end := c.Query("end")
+	r.GET("/api/clients", func(c *gin.Context) {
+		companyIDStr := c.Query("company_id")
+		companyID, err := strconv.Atoi(companyIDStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid company_id"})
+			return
+		}
 
-		startTime, _ := time.Parse("2006-01-02", start)
-		endTime, _ := time.Parse("2006-01-02", end)
-
-		invoices, err := invoiceService.GetInvoicesByPeriod(startTime, endTime)
+		clients, err := clientService.GetClientsByCompanyID(companyID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		c.JSON(http.StatusOK, invoices)
+		c.JSON(http.StatusOK, clients)
+	})
+
+	// API endpoints for Client Bank Accounts
+	r.POST("/api/client-bank-accounts", func(c *gin.Context) {
+		var account models.ClientBankAccount
+		if err := c.ShouldBindJSON(&account); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := clientBankAccountService.CreateAccount(&account); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, account)
+	})
+
+	r.GET("/api/client-bank-accounts", func(c *gin.Context) {
+		clientIDStr := c.Query("client_id")
+		clientID, err := strconv.Atoi(clientIDStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid client_id"})
+			return
+		}
+
+		accounts, err := clientBankAccountService.GetAccountsByClientID(clientID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, accounts)
 	})
 
 	// Start server
