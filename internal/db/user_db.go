@@ -18,3 +18,20 @@ func (r *UserDB) Create(user *models.User) error {
 	_, err := r.db.Exec(query, user.CompanyID, user.Name, user.Email, user.Password)
 	return err
 }
+
+func (r *UserDB) FindByEmail(email string) (*models.User, error) {
+	query := `SELECT * FROM users WHERE email = ?`
+	row := r.db.QueryRow(query, email)
+
+	var user models.User
+	if err := row.Scan(
+		&user.ID,
+		&user.CompanyID,
+		&user.Name,
+		&user.Email,
+		&user.Password,
+	); err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

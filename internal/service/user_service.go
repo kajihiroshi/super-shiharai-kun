@@ -16,3 +16,7 @@ func NewUserService(db *db.UserDB) *UserService {
 func (s *UserService) CreateUser(user *models.User) error {
 	return s.db.Create(user)
 }
+
+func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
+	return s.db.FindByEmail(email)
+}

@@ -18,3 +18,21 @@ func (r *CompanyDB) Create(company *models.Company) error {
 	_, err := r.db.Exec(query, company.Name, company.Representative, company.Phone, company.PostalCode, company.Address)
 	return err
 }
+
+func (r *CompanyDB) FindByID(id int) (*models.Company, error) {
+	query := `SELECT * FROM companies WHERE id = ?`
+	row := r.db.QueryRow(query, id)
+
+	var company models.Company
+	if err := row.Scan(
+		&company.ID,
+		&company.Name,
+		&company.Representative,
+		&company.Phone,
+		&company.PostalCode,
+		&company.Address,
+	); err != nil {
+		return nil, err
+	}
+	return &company, nil
+}

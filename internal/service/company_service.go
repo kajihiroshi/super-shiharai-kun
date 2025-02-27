@@ -16,3 +16,7 @@ func NewCompanyService(db *db.CompanyDB) *CompanyService {
 func (s *CompanyService) CreateCompany(company *models.Company) error {
 	return s.db.Create(company)
 }
+
+func (s *CompanyService) GetCompanyByID(id int) (*models.Company, error) {
+	return s.db.FindByID(id)
+}
