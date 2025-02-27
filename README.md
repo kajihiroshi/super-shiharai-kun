@@ -40,15 +40,21 @@ super-payment-kun/
 │   ├── /models              # Core business models
 │   │   ├── invoice.go
 │   │   ├── user.go
-│   │   └── company.go
+│   │   ├── company.go
+│   │   ├── client.go
+│   │   └── client_bank_account.go
 │   ├── /db                  # Database interaction layer
 │   │   ├── invoice_db.go
 │   │   ├── user_db.go
-│   │   └── company_db.go
+│   │   ├── company_db.go
+│   │   ├── client_db.go
+│   │   └── client_bank_account_db.go
 │   └── /service             # Business logic layer
 │       ├── invoice_service.go
 │       ├── user_service.go
-└──     └── company_service.go
+│       ├── company_service.go
+│       ├── client_service.go
+└──     └── client_bank_account_service.go
 ```
 
 ---
@@ -60,7 +66,86 @@ super-payment-kun/
 2. **MySQL**: Install MySQL from [https://dev.mysql.com/downloads/](https://dev.mysql.com/downloads/).
 3. **Git**: Install Git from [https://git-scm.com/](https://git-scm.com/).
 
-### **Steps**
+---
+
+### **Database Schema Creation**
+
+Run the following SQL commands to create the required tables in your MySQL database:
+
+#### **1. Companies Table**
+```sql
+CREATE TABLE companies (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    representative VARCHAR(255),
+    phone VARCHAR(20),
+    postal_code VARCHAR(10),
+    address TEXT
+);
+```
+
+#### **2. Users Table**
+```sql
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    company_id INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    FOREIGN KEY (company_id) REFERENCES companies(id)
+);
+```
+
+#### **3. Clients Table**
+```sql
+CREATE TABLE clients (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    company_id INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    representative VARCHAR(255),
+    phone VARCHAR(20),
+    postal_code VARCHAR(10),
+    address TEXT,
+    FOREIGN KEY (company_id) REFERENCES companies(id)
+);
+```
+
+#### **4. Client Bank Accounts Table**
+```sql
+CREATE TABLE client_bank_accounts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    client_id INT NOT NULL,
+    bank_name VARCHAR(255) NOT NULL,
+    branch_name VARCHAR(255),
+    account_number VARCHAR(255) NOT NULL,
+    account_name VARCHAR(255) NOT NULL,
+    FOREIGN KEY (client_id) REFERENCES clients(id)
+);
+```
+
+#### **5. Invoices Table**
+```sql
+CREATE TABLE invoices (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    company_id INT NOT NULL,
+    client_id INT NOT NULL,
+    issue_date DATETIME NOT NULL,
+    payment_amount DECIMAL(10, 2) NOT NULL,
+    fee DECIMAL(10, 2),
+    fee_rate DECIMAL(5, 2),
+    tax DECIMAL(10, 2),
+    tax_rate DECIMAL(5, 2),
+    total_amount DECIMAL(10, 2) NOT NULL,
+    due_date DATETIME NOT NULL,
+    status ENUM('未処理', '処理中', '支払い済み', 'エラー') DEFAULT '未処理',
+    FOREIGN KEY (company_id) REFERENCES companies(id),
+    FOREIGN KEY (client_id) REFERENCES clients(id)
+);
+```
+
+---
+
+### **Steps to Run the Project**
 1. **Clone the Repository**:
    ```bash
    git clone https://github.com/kajihiroshi/super-shiharai-kun.git
@@ -69,7 +154,7 @@ super-payment-kun/
 
 2. **Set Up the Database**:
    - Create a MySQL database named `super_shiharai_kun`.
-   - Run the necessary SQL scripts to create tables (if applicable).
+   - Run the SQL commands above to create the required tables.
 
 3. **Configure Environment Variables**:
    - Create a `.env` file in the root directory:
@@ -141,8 +226,8 @@ http://localhost:8080/api
 - **URL**: `/invoices`
 - **Method**: `GET`
 - **Query Parameters**:
-  - `start`: Start date (e.g., `2024-10-01`).
-  - `end`: End date (e.g., `2025-02-26`).
+  - `start`: Start date (e.g., `2023-10-01`).
+  - `end`: End date (e.g., `2023-10-31`).
 - **Response**:
   ```json
   [
