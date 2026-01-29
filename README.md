@@ -232,9 +232,9 @@ http://localhost:8080/api
   ```json
   [
     {
-      "id": 1,
-      "company_id": 1,
-      "client_id": 1,
+      "id": 2,
+      "company_id": 2,
+      "client_id": 123,
       "issue_date": "2023-10-01T00:00:00Z",
       "payment_amount": 10000,
       "fee": 400,
