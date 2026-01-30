@@ -255,8 +255,3 @@ To run unit tests:
 ```bash
 go test ./...
 ```
-
----
-
-## **Contributing**
-This project welcomes contributions. When collaborating, use co-authored commits to give credit to all contributors.
